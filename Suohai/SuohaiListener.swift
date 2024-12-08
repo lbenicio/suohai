@@ -187,11 +187,11 @@ class SuohaiListener {
     
     private func setDefaultInputDevice(force: Bool = false) {
         let listener = self
-        guard let device = listener.devices.first(where: {$0.name == "USB Audio Device" && $0.type == Suohai.AudioDeviceType.input}) else {
+        guard let device = listener.devices.first(where: {$0.name == "fifine  Microphone" && $0.type == Suohai.AudioDeviceType.input}) else {
             return
         }
 
-        if (device.name.contains("USB Audio Device") && (listener.selectedInputDeviceID == nil || force)) {
+        if (device.name.contains("fifine  Microphone") && (listener.selectedInputDeviceID == nil || force)) {
             listener.selectedInputDeviceID = listener.selectedInputDeviceID != device.id ? device.id : nil
         }
     }
