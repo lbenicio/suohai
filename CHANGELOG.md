@@ -14,7 +14,7 @@ The format is based on "Keep a Changelog" and this project adheres to [Semantic 
 - Preserve existing user audio defaults instead of selecting a hard-coded microphone at startup.
 - Document that app and DMG builds are not Developer ID-signed or notarized.
 
-## [0.1.0]
+## [0.1.0] - 2026-11-01
 
 ### Added
 - Swift Package build targeting macOS 27 with Swift 6.4.
