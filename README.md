@@ -2,11 +2,11 @@
 
 Audio input/output source locking tool for macOS.
 
+![Screenshot](assets/images/0x01.png)
+
 ## Installation
 
 Check the [GitHub Releases](https://github.com/lbenicio/suohai/releases) page for published builds. To build a local app and disk image, run `make dmg`, open `.build/Suohai.dmg`, and drag `Suohai.app` into Applications.
-
-No Developer ID identity is used and the app is not notarized. Swift's linker adds a local ad-hoc signature to the executable (with no signing Team ID). macOS may warn or block the downloaded app; only open it if you trust the source, or build it yourself from this repository.
 
 ## Build
 
@@ -26,7 +26,6 @@ The app does not choose a hard-coded device. It changes system audio defaults wh
 Please report suspected vulnerabilities privately to [hi@lbenicio.dev](mailto:hi@lbenicio.dev), following [SECURITY.md](SECURITY.md).
 
 ## Credit
-
 
 - Maintained by [Leonardo Benicio](https://github.com/lbenicio) ([hi@lbenicio.dev](mailto:hi@lbenicio.dev)).
 
