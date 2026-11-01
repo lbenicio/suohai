@@ -14,4 +14,13 @@ public struct AudioDeviceCapabilities: Equatable, Sendable {
     public var hasOutput: Bool {
         outputChannelCount > 0
     }
+
+    public func supports(_ direction: AudioDirection) -> Bool {
+        switch direction {
+        case .input:
+            hasInput
+        case .output:
+            hasOutput
+        }
+    }
 }

@@ -1,5 +1,5 @@
 import XCTest
-@testable import SuohaiCore
+@testable import SuohaiDomain
 
 final class AudioDeviceCapabilitiesTests: XCTestCase {
     func testInputOnlyDevice() {
@@ -28,5 +28,15 @@ final class AudioDeviceCapabilitiesTests: XCTestCase {
 
         XCTAssertFalse(capabilities.hasInput)
         XCTAssertFalse(capabilities.hasOutput)
+    }
+
+    func testSupportsRequestedDirection() {
+        let inputOnly = AudioDeviceCapabilities(inputChannelCount: 1, outputChannelCount: 0)
+        let outputOnly = AudioDeviceCapabilities(inputChannelCount: 0, outputChannelCount: 1)
+
+        XCTAssertTrue(inputOnly.supports(.input))
+        XCTAssertFalse(inputOnly.supports(.output))
+        XCTAssertFalse(outputOnly.supports(.input))
+        XCTAssertTrue(outputOnly.supports(.output))
     }
 }

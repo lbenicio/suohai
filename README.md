@@ -2,6 +2,18 @@
 
 Audio input/output source locking tool for macOS.
 
+## Architecture
+
+The app follows a hexagonal layout: domain models are independent of macOS APIs, application use cases depend on ports, and adapters provide CoreAudio, UserDefaults, and the menu bar UI.
+
+- `src/domain/` contains audio-device models and selection value types.
+- `src/application/ports/` defines audio-system and selection-store interfaces.
+- `src/application/usecases/` coordinates selection, persistence, and device-change behavior.
+- `src/adapters/macos/` implements the CoreAudio and UserDefaults ports.
+- `src/adapters/presentation/` contains the menu bar adapter.
+- `src/app/` composes the application at startup.
+- `tests/` mirrors the domain, application, and adapter layers.
+
 ![Screenshot](assets/images/0x01.png)
 
 ## Installation

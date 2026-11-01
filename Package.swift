@@ -12,12 +12,22 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SuohaiCore",
-            path: "src/core"
+            name: "SuohaiDomain",
+            path: "src/domain"
+        ),
+        .target(
+            name: "SuohaiApplication",
+            dependencies: ["SuohaiDomain"],
+            path: "src/application"
+        ),
+        .target(
+            name: "SuohaiAdapters",
+            dependencies: ["SuohaiApplication", "SuohaiDomain"],
+            path: "src/adapters/macos"
         ),
         .executableTarget(
             name: "Suohai",
-            dependencies: ["SuohaiCore"],
+            dependencies: ["SuohaiApplication", "SuohaiAdapters", "SuohaiDomain"],
             path: ".",
             exclude: [
                 ".gitignore",
@@ -30,10 +40,12 @@ let package = Package(
                 "assets/plist/Info.plist",
                 "scripts",
                 ".github",
-                "src/core",
+                "src/domain",
+                "src/application",
+                "src/adapters/macos",
                 "tests",
             ],
-            sources: ["src"],
+            sources: ["src/app", "src/adapters/presentation"],
             resources: [
                 .process("assets/icons/app-assets.xcassets"),
                 .copy("assets/icons/StatusItem.pdf"),
@@ -42,9 +54,19 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "SuohaiCoreTests",
-            dependencies: ["SuohaiCore"],
-            path: "tests"
+            name: "SuohaiDomainTests",
+            dependencies: ["SuohaiDomain"],
+            path: "tests/domain"
+        ),
+        .testTarget(
+            name: "SuohaiApplicationTests",
+            dependencies: ["SuohaiApplication", "SuohaiDomain"],
+            path: "tests/application"
+        ),
+        .testTarget(
+            name: "SuohaiAdaptersTests",
+            dependencies: ["SuohaiAdapters", "SuohaiApplication", "SuohaiDomain"],
+            path: "tests/adapters"
         ),
     ],
     swiftLanguageModes: [.v6]

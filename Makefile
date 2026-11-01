@@ -33,7 +33,6 @@ dmg: pkg
 	mkdir -p "$(DMG_STAGING)/licenses"
 	ditto "$(APP_BUNDLE)" "$(DMG_STAGING)/$(PRODUCT).app"
 	cp LICENSE.txt "$(DMG_STAGING)/LICENSE.txt"
-	cp licenses/original-mit.txt "$(DMG_STAGING)/licenses/original-mit.txt"
 	rm -f "$(DMG_IMAGE)"
 	diskutil image create from --format UDZO --volumeName "$(PRODUCT)" "$(DMG_STAGING)" "$(DMG_IMAGE)"
 	rm -rf "$(DMG_STAGING)"

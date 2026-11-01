@@ -24,7 +24,6 @@ cp "$BIN_DIR/Suohai" "$APP_CONTENTS/MacOS/Suohai"
 cp "$ROOT_DIR/assets/plist/Info.plist" "$APP_CONTENTS/Info.plist"
 cp "$ROOT_DIR/assets/icons/icon.icns" "$APP_RESOURCES/icon.icns"
 cp "$ROOT_DIR/LICENSE.txt" "$APP_RESOURCES/LICENSE.txt"
-cp "$ROOT_DIR/licenses/original-mit.txt" "$APP_RESOURCES/licenses/original-mit.txt"
 cp -R "$RESOURCE_BUNDLE/." "$APP_RESOURCES/Suohai_Suohai.bundle/"
 
 if [ -f "$RESOURCE_BUNDLE/Contents/Resources/Assets.car" ]; then

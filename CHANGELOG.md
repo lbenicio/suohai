@@ -8,9 +8,10 @@ The format is based on "Keep a Changelog" and this project adheres to [Semantic 
 
 ### Added
 - Private vulnerability reporting and CI build/test checks.
-- Unit tests for input, output, and duplex audio-device capability handling.
+- Domain, application, and persistence-adapter tests for audio-device selection behavior.
 
 ### Changed
+- Separate domain, application, macOS adapters, and app composition following hexagonal architecture.
 - Preserve existing user audio defaults instead of selecting a hard-coded microphone at startup.
 - Document that app and DMG builds are not Developer ID-signed or notarized.
 
