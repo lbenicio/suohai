@@ -1,13 +1,13 @@
 public struct AudioDeviceSelection: Equatable, Sendable {
-    public private(set) var inputDeviceID: AudioDevice.ID?
-    public private(set) var outputDeviceID: AudioDevice.ID?
+    public private(set) var inputDeviceID: AudioDevice.Identifier?
+    public private(set) var outputDeviceID: AudioDevice.Identifier?
 
-    public init(inputDeviceID: AudioDevice.ID? = nil, outputDeviceID: AudioDevice.ID? = nil) {
+    public init(inputDeviceID: AudioDevice.Identifier? = nil, outputDeviceID: AudioDevice.Identifier? = nil) {
         self.inputDeviceID = inputDeviceID
         self.outputDeviceID = outputDeviceID
     }
 
-    public func deviceID(for direction: AudioDirection) -> AudioDevice.ID? {
+    public func deviceID(for direction: AudioDirection) -> AudioDevice.Identifier? {
         switch direction {
         case .input:
             inputDeviceID
@@ -16,7 +16,7 @@ public struct AudioDeviceSelection: Equatable, Sendable {
         }
     }
 
-    public mutating func setDeviceID(_ id: AudioDevice.ID?, for direction: AudioDirection) {
+    public mutating func setDeviceID(_ id: AudioDevice.Identifier?, for direction: AudioDirection) {
         switch direction {
         case .input:
             inputDeviceID = id

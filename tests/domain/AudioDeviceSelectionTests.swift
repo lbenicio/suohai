@@ -1,5 +1,5 @@
-import XCTest
 @testable import SuohaiDomain
+import XCTest
 
 final class AudioDeviceSelectionTests: XCTestCase {
     func testSelectionStartsEmpty() {

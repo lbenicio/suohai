@@ -19,7 +19,7 @@ public final class AudioDeviceSelectionService {
     ) {
         self.audioSystem = audioSystem
         self.selectionStore = selectionStore
-        self.selection = selectionStore.load()
+        selection = selectionStore.load()
 
         audioSystem.onDevicesChanged = { [weak self] in
             self?.handleDevicesChanged()
@@ -48,11 +48,12 @@ public final class AudioDeviceSelectionService {
         audioSystem.stopObserving()
     }
 
-    public func selectDevice(_ id: AudioDevice.ID?, for direction: AudioDirection) {
+    public func selectDevice(_ id: AudioDevice.Identifier?, for direction: AudioDirection) {
         if let id {
             guard let device = audioSystem.availableDevices()?.first(where: { $0.id == id }),
                   device.capabilities.supports(direction),
-                  audioSystem.setDefaultDevice(id: id, for: direction) else {
+                  audioSystem.setDefaultDevice(id: id, for: direction)
+            else {
                 return
             }
         }
@@ -75,7 +76,8 @@ public final class AudioDeviceSelectionService {
 
             guard let device = devices.first(where: { $0.id == id }),
                   device.capabilities.supports(direction),
-                  audioSystem.setDefaultDevice(id: id, for: direction) else {
+                  audioSystem.setDefaultDevice(id: id, for: direction)
+            else {
                 restoredSelection.setDeviceID(nil, for: direction)
                 continue
             }

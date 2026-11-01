@@ -6,7 +6,7 @@ public protocol AudioDeviceSystem: AnyObject {
     var onDefaultDeviceChanged: ((AudioDirection) -> Void)? { get set }
 
     func availableDevices() -> [AudioDevice]?
-    func setDefaultDevice(id: AudioDevice.ID, for direction: AudioDirection) -> Bool
+    func setDefaultDevice(id: AudioDevice.Identifier, for direction: AudioDirection) -> Bool
     func startObserving()
     func stopObserving()
 }

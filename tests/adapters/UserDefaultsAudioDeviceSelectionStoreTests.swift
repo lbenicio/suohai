@@ -1,42 +1,50 @@
 import Foundation
-import XCTest
-import SuohaiDomain
 @testable import SuohaiAdapters
+import SuohaiDomain
+import XCTest
 
 @MainActor
-final class UserDefaultsAudioDeviceSelectionStoreTests: XCTestCase {
+final class UserDefaultsSelectionStoreTests: XCTestCase {
     func testLoadReturnsEmptySelectionForNewDefaultsSuite() {
-        let (defaults, domain, store) = makeStore()
-        defer { defaults.removePersistentDomain(forName: domain) }
+        let fixture = makeStore()
+        defer { fixture.defaults.removePersistentDomain(forName: fixture.domain) }
 
-        XCTAssertEqual(store.load(), AudioDeviceSelection())
+        XCTAssertEqual(fixture.store.load(), AudioDeviceSelection())
     }
 
     func testSaveAndLoadRoundTripsBothDirections() {
-        let (defaults, domain, store) = makeStore()
-        defer { defaults.removePersistentDomain(forName: domain) }
+        let fixture = makeStore()
+        defer { fixture.defaults.removePersistentDomain(forName: fixture.domain) }
         let selection = AudioDeviceSelection(inputDeviceID: 12, outputDeviceID: 34)
 
-        store.save(selection)
+        fixture.store.save(selection)
 
-        XCTAssertEqual(store.load(), selection)
+        XCTAssertEqual(fixture.store.load(), selection)
     }
 
     func testSavingEmptySelectionRemovesPreviouslyStoredIDs() {
-        let (defaults, domain, store) = makeStore()
-        defer { defaults.removePersistentDomain(forName: domain) }
-        store.save(AudioDeviceSelection(inputDeviceID: 12, outputDeviceID: 34))
+        let fixture = makeStore()
+        defer { fixture.defaults.removePersistentDomain(forName: fixture.domain) }
+        fixture.store.save(AudioDeviceSelection(inputDeviceID: 12, outputDeviceID: 34))
 
-        store.save(AudioDeviceSelection())
+        fixture.store.save(AudioDeviceSelection())
 
-        XCTAssertNil(store.load().inputDeviceID)
-        XCTAssertNil(store.load().outputDeviceID)
+        XCTAssertNil(fixture.store.load().inputDeviceID)
+        XCTAssertNil(fixture.store.load().outputDeviceID)
     }
 
-    private func makeStore() -> (UserDefaults, String, UserDefaultsAudioDeviceSelectionStore) {
+    private func makeStore() -> UserDefaultsStoreFixture {
         let domain = "SuohaiTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: domain)!
         defaults.removePersistentDomain(forName: domain)
-        return (defaults, domain, UserDefaultsAudioDeviceSelectionStore(defaults: defaults))
+        let store = UserDefaultsAudioDeviceSelectionStore(defaults: defaults)
+        return UserDefaultsStoreFixture(defaults: defaults, domain: domain, store: store)
     }
+}
+
+@MainActor
+private struct UserDefaultsStoreFixture {
+    let defaults: UserDefaults
+    let domain: String
+    let store: UserDefaultsAudioDeviceSelectionStore
 }

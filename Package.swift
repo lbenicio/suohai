@@ -5,10 +5,10 @@ let package = Package(
     name: "Suohai",
     defaultLocalization: "en",
     platforms: [
-        .macOS("27.0"),
+        .macOS("27.0")
     ],
     products: [
-        .executable(name: "Suohai", targets: ["Suohai"]),
+        .executable(name: "Suohai", targets: ["Suohai"])
     ],
     targets: [
         .target(
@@ -43,14 +43,14 @@ let package = Package(
                 "src/domain",
                 "src/application",
                 "src/adapters/macos",
-                "tests",
+                "tests"
             ],
             sources: ["src/app", "src/adapters/presentation"],
             resources: [
                 .process("assets/icons/app-assets.xcassets"),
                 .copy("assets/icons/StatusItem.pdf"),
                 .process("assets/i18n/en.lproj"),
-                .process("assets/i18n/zh-Hans.lproj"),
+                .process("assets/i18n/zh-Hans.lproj")
             ]
         ),
         .testTarget(
@@ -67,7 +67,7 @@ let package = Package(
             name: "SuohaiAdaptersTests",
             dependencies: ["SuohaiAdapters", "SuohaiApplication", "SuohaiDomain"],
             path: "tests/adapters"
-        ),
+        )
     ],
     swiftLanguageModes: [.v6]
 )

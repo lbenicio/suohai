@@ -1,7 +1,12 @@
 import AppKit
 
 extension NSMenuItem {
-    convenience init(title string: String, target: AnyObject? = nil, action selector: Selector? = nil, keyEquivalent charCode: String? = nil) {
+    convenience init(
+        title string: String,
+        target: AnyObject? = nil,
+        action selector: Selector? = nil,
+        keyEquivalent charCode: String? = nil
+    ) {
         self.init(title: string, action: selector, keyEquivalent: charCode ?? "")
         self.target = target
     }

@@ -3,14 +3,14 @@ import SuohaiAdapters
 import SuohaiApplication
 
 #if !SWIFT_PACKAGE
-@main
+    @main
 #endif
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var selectionService: AudioDeviceSelectionService?
     private var controller: SuohaiController?
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         NSApplication.shared.setActivationPolicy(.accessory)
 
         let audioSystem = CoreAudioAudioSystem()
@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         selectionService.start()
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    func applicationWillTerminate(_: Notification) {
         selectionService?.stop()
     }
 }

@@ -2,6 +2,7 @@
 
 # Binaries
 SWIFT ?= swift
+SWIFT_VERSION ?= 6.4
 SWIFTLINT ?= swiftlint
 SWIFTFORMAT ?= swiftformat
 SHELL := /bin/bash
@@ -33,7 +34,7 @@ lint: ## Lint and automatically fix Swift sources.
 	$(SWIFTLINT) lint --fix $(SWIFT_PATHS)
 
 format: ## Format Swift sources in place.
-	$(SWIFTFORMAT) $(SWIFT_PATHS)
+	$(SWIFTFORMAT) --swift-version $(SWIFT_VERSION) --trailing-commas never $(SWIFT_PATHS)
 
 run: ## Run the menu bar app.
 	$(SWIFT) run $(PRODUCT)

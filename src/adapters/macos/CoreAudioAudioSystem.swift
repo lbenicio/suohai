@@ -95,7 +95,7 @@ public final class CoreAudioAudioSystem: AudioDeviceSystem {
         }
     }
 
-    public func setDefaultDevice(id: AudioDevice.ID, for direction: AudioDirection) -> Bool {
+    public func setDefaultDevice(id: AudioDevice.Identifier, for direction: AudioDirection) -> Bool {
         var deviceID = AudioDeviceID(id)
         var address = direction == .input ? AudioPropertyAddress.inputDevice : AudioPropertyAddress.outputDevice
         let status = AudioObjectSetPropertyData(

@@ -1,13 +1,13 @@
-import XCTest
-import SuohaiDomain
 @testable import SuohaiApplication
+import SuohaiDomain
+import XCTest
 
 @MainActor
 final class AudioDeviceSelectionServiceTests: XCTestCase {
     func testStartRestoresValidInputAndOutputSelections() {
         let system = FakeAudioDeviceSystem(devices: [
             device(1, input: 1, output: 0),
-            device(2, input: 0, output: 2),
+            device(2, input: 0, output: 2)
         ])
         let store = FakeSelectionStore(selection: AudioDeviceSelection(inputDeviceID: 1, outputDeviceID: 2))
         let service = AudioDeviceSelectionService(audioSystem: system, selectionStore: store)
@@ -16,7 +16,7 @@ final class AudioDeviceSelectionServiceTests: XCTestCase {
 
         XCTAssertEqual(system.routeAttempts, [
             RouteAttempt(id: 1, direction: .input),
-            RouteAttempt(id: 2, direction: .output),
+            RouteAttempt(id: 2, direction: .output)
         ])
         XCTAssertEqual(service.selection, store.selection)
     }
@@ -170,7 +170,7 @@ final class AudioDeviceSelectionServiceTests: XCTestCase {
         XCTAssertEqual(system.stopCount, 1)
     }
 
-    private func device(_ id: AudioDevice.ID, input: Int, output: Int) -> AudioDevice {
+    private func device(_ id: AudioDevice.Identifier, input: Int, output: Int) -> AudioDevice {
         AudioDevice(
             id: id,
             name: "Device \(id)",
@@ -198,7 +198,7 @@ private final class FakeAudioDeviceSystem: AudioDeviceSystem {
         devices
     }
 
-    func setDefaultDevice(id: AudioDevice.ID, for direction: AudioDirection) -> Bool {
+    func setDefaultDevice(id: AudioDevice.Identifier, for direction: AudioDirection) -> Bool {
         routeAttempts.append(RouteAttempt(id: id, direction: direction))
         return routeResults[direction] ?? true
     }
@@ -221,7 +221,7 @@ private final class FakeAudioDeviceSystem: AudioDeviceSystem {
 }
 
 private struct RouteAttempt: Equatable {
-    let id: AudioDevice.ID
+    let id: AudioDevice.Identifier
     let direction: AudioDirection
 }
 

@@ -43,7 +43,13 @@ final class SuohaiController: NSObject {
             }
 
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: localizedString("Quit"), target: self, action: #selector(quitAction(_:)), keyEquivalent: "q"))
+        let quitItem = NSMenuItem(
+            title: localizedString("Quit"),
+            target: self,
+            action: #selector(quitAction(_:)),
+            keyEquivalent: "q"
+        )
+        menu.addItem(quitItem)
         menu.update()
     }
 
@@ -68,7 +74,7 @@ final class SuohaiController: NSObject {
     }
 
     @objc
-    private func quitAction(_ sender: NSMenuItem) {
+    private func quitAction(_: NSMenuItem) {
         NSApplication.shared.terminate(nil)
     }
 
@@ -78,11 +84,11 @@ final class SuohaiController: NSObject {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         #if SWIFT_PACKAGE
-        if let imageURL = Bundle.module.url(forResource: "StatusItem", withExtension: "pdf") {
-            statusItem.button?.image = NSImage(contentsOf: imageURL)
-        }
+            if let imageURL = Bundle.module.url(forResource: "StatusItem", withExtension: "pdf") {
+                statusItem.button?.image = NSImage(contentsOf: imageURL)
+            }
         #else
-        statusItem.button?.image = #imageLiteral(resourceName: "StatusItem")
+            statusItem.button?.image = #imageLiteral(resourceName: "StatusItem")
         #endif
         statusItem.target = self
         statusItem.menu = menu
@@ -90,15 +96,15 @@ final class SuohaiController: NSObject {
 
     private func localizedString(_ key: String) -> String {
         #if SWIFT_PACKAGE
-        NSLocalizedString(key, bundle: .module, comment: "")
+            NSLocalizedString(key, bundle: .module, comment: "")
         #else
-        NSLocalizedString(key, comment: "")
+            NSLocalizedString(key, comment: "")
         #endif
     }
 }
 
 extension SuohaiController: NSMenuDelegate {
-    func menuWillOpen(_ menu: NSMenu) {
+    func menuWillOpen(_: NSMenu) {
         reloadMenu()
     }
 }

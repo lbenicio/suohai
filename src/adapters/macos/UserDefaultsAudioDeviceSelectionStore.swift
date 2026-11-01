@@ -17,8 +17,8 @@ public final class UserDefaultsAudioDeviceSelectionStore: AudioDeviceSelectionSt
 
     public func load() -> AudioDeviceSelection {
         AudioDeviceSelection(
-            inputDeviceID: defaults.object(forKey: Key.inputDeviceID) as? AudioDevice.ID,
-            outputDeviceID: defaults.object(forKey: Key.outputDeviceID) as? AudioDevice.ID
+            inputDeviceID: defaults.object(forKey: Key.inputDeviceID) as? AudioDevice.Identifier,
+            outputDeviceID: defaults.object(forKey: Key.outputDeviceID) as? AudioDevice.Identifier
         )
     }
 
@@ -27,7 +27,7 @@ public final class UserDefaultsAudioDeviceSelectionStore: AudioDeviceSelectionSt
         save(selection.outputDeviceID, forKey: Key.outputDeviceID)
     }
 
-    private func save(_ id: AudioDevice.ID?, forKey key: String) {
+    private func save(_ id: AudioDevice.Identifier?, forKey key: String) {
         if let id {
             defaults.set(id, forKey: key)
         } else {
