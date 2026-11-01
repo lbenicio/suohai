@@ -1,0 +1,125 @@
+name: Build DMG and release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: xcode-27
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Read version and release notes from changelog
+        id: changelog
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          headers = list(re.finditer(r"(?m)^## \[([^\]]+)\][^\n]*\n", changelog))
+          release_header = next(
+              (header for header in headers if header.group(1) != "Unreleased"),
+              None,
+          )
+          if release_header is None:
+              print("::error::CHANGELOG.md has no versioned release section.")
+              raise SystemExit(1)
+
+          version = release_header.group(1)
+          semver = r"(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+          if re.fullmatch(semver, version) is None:
+              print(f"::error::Invalid release version in CHANGELOG.md: {version}")
+              raise SystemExit(1)
+
+          next_header = re.search(r"(?m)^## \[", changelog[release_header.end():])
+          notes_end = release_header.end() + next_header.start() if next_header else len(changelog)
+          notes = changelog[release_header.end():notes_end].strip()
+          if not notes:
+              print(f"::error::No changelog entries found for version {version}.")
+              raise SystemExit(1)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"version={version}\n")
+          Path(os.environ["RUNNER_TEMP"], "release-notes.md").write_text(
+              notes + "\n", encoding="utf-8"
+          )
+          print(f"Using changelog version {version}.")
+          PY
+
+      - name: Abort if release already exists
+        id: duplicate-check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.changelog.outputs.version }}
+        run: |
+          for release_tag in "$RELEASE_VERSION" "v$RELEASE_VERSION"; do
+            if gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "::error title=Duplicate release::Release $release_tag already exists for version $RELEASE_VERSION."
+              exit 1
+            fi
+          done
+          echo "No existing release found for version $RELEASE_VERSION."
+
+      - name: Build disk image
+        id: build
+        run: make dmg
+
+      - name: Publish GitHub release with DMG
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.changelog.outputs.version }}
+        run: |
+          release_url=$(gh release create "$RELEASE_VERSION" \
+            .build/Suohai.dmg \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "v$RELEASE_VERSION" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" \
+            --target "$GITHUB_SHA")
+          printf 'url=%s\n' "$release_url" >> "$GITHUB_OUTPUT"
+
+      - name: Add workflow summary
+        if: ${{ always() }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+          RELEASE_VERSION: ${{ steps.changelog.outputs.version }}
+          CHANGELOG_STATUS: ${{ steps.changelog.outcome }}
+          DUPLICATE_CHECK_STATUS: ${{ steps.duplicate-check.outcome }}
+          BUILD_STATUS: ${{ steps.build.outcome }}
+          PUBLISH_STATUS: ${{ steps.publish.outcome }}
+          RELEASE_URL: ${{ steps.publish.outputs.url }}
+          ACTOR: ${{ github.actor }}
+          REF_NAME: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo '## 📦 Build DMG and release'
+            echo
+            echo '| Detail | Value |'
+            echo '| --- | --- |'
+            printf '| Job result | %s |\n' "$JOB_STATUS"
+            printf '| Changelog version | %s |\n' "${RELEASE_VERSION:-not resolved}"
+            printf '| Changelog parsing | %s |\n' "${CHANGELOG_STATUS:-not run}"
+            printf '| Duplicate-release check | %s |\n' "${DUPLICATE_CHECK_STATUS:-not run}"
+            printf '| DMG build | %s |\n' "${BUILD_STATUS:-not run}"
+            printf '| DMG asset | Suohai.dmg (attached on success) |\n'
+            printf '| Release publish | %s |\n' "${PUBLISH_STATUS:-not run}"
+            if [ -n "$RELEASE_URL" ]; then
+              printf '| Release | [View release](%s) |\n' "$RELEASE_URL"
+            fi
+            printf '| Trigger | %s on %s |\n' "$ACTOR" "$REF_NAME"
+            printf '| Workflow run | [View run](%s) |\n' "$RUN_URL"
+          } >> "$GITHUB_STEP_SUMMARY"

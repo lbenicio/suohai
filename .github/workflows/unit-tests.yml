@@ -15,4 +15,30 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run unit tests
+        id: tests
         run: swift test
+
+      - name: Add workflow summary
+        if: ${{ always() }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+          TEST_STATUS: ${{ steps.tests.outcome }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          RUNNER_OS: ${{ runner.os }}
+          RUNNER_ARCH: ${{ runner.arch }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo '## 🧪 Unit tests'
+            echo
+            echo '| Detail | Value |'
+            echo '| --- | --- |'
+            printf '| Job result | %s |\n' "$JOB_STATUS"
+            printf '| Test step | %s |\n' "${TEST_STATUS:-not run}"
+            printf '| Trigger | %s by %s |\n' "$EVENT_NAME" "$ACTOR"
+            printf '| Ref | %s |\n' "$REF_NAME"
+            printf '| Runner | %s / %s |\n' "$RUNNER_OS" "$RUNNER_ARCH"
+            printf '| Workflow run | [View run](%s) |\n' "$RUN_URL"
+          } >> "$GITHUB_STEP_SUMMARY"

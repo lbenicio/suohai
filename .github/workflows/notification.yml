@@ -8,6 +8,8 @@ on:
   workflow_run:
     workflows:
       - Dependabot Updates
+      - Build DMG and release
+      - Unit tests 
     branches:
       - main
     types:
@@ -21,6 +23,7 @@ jobs:
       packages: write
     steps:
       - name: Send Telegram message
+        id: telegram
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.CHATID }}
@@ -39,3 +42,29 @@ jobs:
             Job status: ${{ github.event.workflow_run.conclusion == 'success' && '✅' || '🚫' }} ${{ github.event.workflow_run.conclusion }}
 
             See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+
+      - name: Add workflow summary
+        if: ${{ always() }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+          NOTIFICATION_STATUS: ${{ steps.telegram.outcome }}
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          REF_NAME: ${{ github.ref_name }}
+          UPSTREAM_WORKFLOW: ${{ github.event.workflow_run.name || 'Manual dispatch' }}
+          UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion || 'Not applicable' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo '## 📣 Telegram notification'
+            echo
+            echo '| Detail | Value |'
+            echo '| --- | --- |'
+            printf '| Job result | %s |\n' "$JOB_STATUS"
+            printf '| Notification step | %s |\n' "${NOTIFICATION_STATUS:-not run}"
+            printf '| Trigger | %s by %s |\n' "$EVENT_NAME" "$ACTOR"
+            printf '| Ref | %s |\n' "$REF_NAME"
+            printf '| Upstream workflow | %s |\n' "$UPSTREAM_WORKFLOW"
+            printf '| Upstream result | %s |\n' "$UPSTREAM_CONCLUSION"
+            printf '| Workflow run | [View run](%s) |\n' "$RUN_URL"
+          } >> "$GITHUB_STEP_SUMMARY"

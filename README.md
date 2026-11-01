@@ -67,7 +67,7 @@ Useful Make targets:
 | `make clean` | Remove SwiftPM output and generated app/disk-image artifacts. |
 | `make help` | List available targets. |
 
-The unit-test GitHub Actions workflow is intentionally manual: maintainers can start it from the repository’s **Actions** tab.
+The unit-test and **Build DMG and release** GitHub Actions workflows are manually triggered from the repository’s **Actions** tab. The release workflow uses the first versioned section in `CHANGELOG.md` (excluding `[Unreleased]`) for the release version and notes, and aborts if that version has already been released.
 
 For contribution guidance, see [CONTRIBUTING.md](CONTRIBUTING.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
