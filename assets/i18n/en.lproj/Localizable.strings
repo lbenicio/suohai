@@ -1,0 +1,12 @@
+/* 
+  Localizable.strings
+  Suohai
+
+
+  SPDX-License-Identifier: GPL-3.0-only
+*/
+
+"Quit" = "Quit";
+"OutputDevices" = "Output devices:";
+"InputDevices" = "Input devices:";
+
