@@ -1,46 +1,88 @@
 # Suohai
 
-Audio input/output source locking tool for macOS.
+[![Unit tests](https://github.com/lbenicio/suohai/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/lbenicio/suohai/actions/workflows/unit-tests.yml)
+[![Latest release](https://img.shields.io/github/v/release/lbenicio/suohai)](https://github.com/lbenicio/suohai/releases)
+[![License: GPL-3.0-only](https://img.shields.io/badge/License-GPL--3.0--only-blue.svg)](LICENSE.txt)
 
-## Architecture
+Suohai is a macOS menu bar utility for keeping your chosen system audio input and output devices selected. Choose a microphone and speaker or headset from the menu bar; Suohai reapplies those choices when macOS changes the default device and restores them when the app starts.
 
-The app follows a hexagonal layout: domain models are independent of macOS APIs, application use cases depend on ports, and adapters provide CoreAudio, UserDefaults, and the menu bar UI.
+![Suohai menu bar app screenshot](assets/images/0x01.png)
 
-- `src/domain/` contains audio-device models and selection value types.
-- `src/application/ports/` defines audio-system and selection-store interfaces.
-- `src/application/usecases/` coordinates selection, persistence, and device-change behavior.
-- `src/adapters/macos/` implements the CoreAudio and UserDefaults ports.
-- `src/adapters/presentation/` contains the menu bar adapter.
-- `src/app/` composes the application at startup.
-- `tests/` mirrors the domain, application, and adapter layers.
+## Features
 
-![Screenshot](assets/images/0x01.png)
+- Choose input and output devices independently from the menu bar.
+- Keep selected devices as the system-wide defaults.
+- Restore saved selections when Suohai launches.
+- Automatically clear a selection if its device is no longer available.
+- Store selected device IDs locally using `UserDefaults`.
+
+Suohai does not capture or transmit audio. It changes macOS audio-device defaults; it does not route audio for individual apps.
+
+## Requirements
+
+- macOS 27 or later
+- Swift 6.4 or later to build from source
 
 ## Installation
 
-Check the [GitHub Releases](https://github.com/lbenicio/suohai/releases) page for published builds. To build a local app and disk image, run `make dmg`, open `.build/Suohai.dmg`, and drag `Suohai.app` into Applications.
+Download the latest `Suohai.dmg` from [GitHub Releases](https://github.com/lbenicio/suohai/releases). Open the disk image and move `Suohai.app` to your Applications folder.
 
-## Build
+Release builds are currently not Developer ID-signed or notarized, so macOS may show a security warning when you open the app.
 
-Requires macOS 27 or later and Swift 6.4 or later.
+### Build from source
 
-- `make build` builds the package executable.
-- `make test` runs the unit tests.
-- `make run` runs the menu bar app from the package.
-- `make pkg` creates `.build/Suohai.app`.
-- `make dmg` creates `.build/Suohai.dmg` with the app and license notices.
-- `make clean` removes SwiftPM build artifacts and generated app/disk-image bundles.
+Install the required Swift toolchain, then clone the repository and build a disk image:
 
-The app does not choose a hard-coded device. It changes system audio defaults when you choose a device and reapplies a previously selected lock at startup. Selected device IDs are stored locally in `UserDefaults`; the app does not capture audio or send data over the network.
+```sh
+git clone https://github.com/lbenicio/suohai.git
+cd suohai
+make dmg
+```
+
+The disk image is created at `.build/Suohai.dmg`. To build only the app bundle, run `make pkg`; it creates `.build/Suohai.app`.
+
+## Usage
+
+1. Launch Suohai. Its status item appears in the menu bar.
+2. Open the menu and select an available input device, output device, or both.
+3. Select an active device again to clear that selection and release its default-device lock.
+
+Selections are independent and persist locally. Suohai does not choose a device for you when no selection is saved. If a selected device is disconnected or unavailable, Suohai clears that selection.
+
+## Development
+
+The project uses Swift Package Manager and a layered architecture: platform-independent device and selection types live in `src/domain/`, application behavior in `src/application/`, macOS and menu bar adapters in `src/adapters/`, and startup composition in `src/app/`. Tests are organized under `tests/` by layer.
+
+Useful Make targets:
+
+| Command | Description |
+| --- | --- |
+| `make test` | Run the Swift package test suite. |
+| `make build` | Build the `Suohai` executable. |
+| `make lint` | Run SwiftLint with `--fix`; this may modify Swift files. |
+| `make format` | Format Swift files in place with SwiftFormat. |
+| `make run` | Build and launch the menu bar app. |
+| `make pkg` | Create `.build/Suohai.app`. |
+| `make dmg` | Create `.build/Suohai.dmg`. |
+| `make clean` | Remove SwiftPM output and generated app/disk-image artifacts. |
+| `make help` | List available targets. |
+
+The unit-test GitHub Actions workflow is intentionally manual: maintainers can start it from the repository’s **Actions** tab.
+
+For contribution guidance, see [CONTRIBUTING.md](CONTRIBUTING.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Privacy
+
+Suohai reads the available audio-device list and updates the system default input or output device when you make a selection. It stores selected device IDs locally in `UserDefaults`. The app does not record audio or send audio or selection data over the network.
 
 ## Security
 
-Please report suspected vulnerabilities privately to [hi@lbenicio.dev](mailto:hi@lbenicio.dev), following [SECURITY.md](SECURITY.md).
-
-## Credit
-
-- Maintained by [Leonardo Benicio](https://github.com/lbenicio) ([hi@lbenicio.dev](mailto:hi@lbenicio.dev)).
+Report suspected vulnerabilities privately by following the instructions in [SECURITY.md](SECURITY.md). Please do not file public issues containing vulnerability details.
 
 ## License
 
-This project is licensed under the [GNU General Public License v3.0 only](LICENSE.txt).
+Suohai is licensed under the [GNU General Public License v3.0 only](LICENSE.txt).
+
+## Maintainer
+
+Maintained by [Leonardo Benicio](https://github.com/lbenicio). Questions and general inquiries: [hi@lbenicio.dev](mailto:hi@lbenicio.dev).

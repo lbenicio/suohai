@@ -2,6 +2,8 @@
 
 # Binaries
 SWIFT ?= swift
+SWIFTLINT ?= swiftlint
+SWIFTFORMAT ?= swiftformat
 SHELL := /bin/bash
 
 # Project
@@ -14,7 +16,8 @@ DMG_STAGING := .build/dmg-staging
 
 # Targets
 .DEFAULT_GOAL := pkg
-.PHONY: help build run test pkg dmg clean
+SWIFT_PATHS := Package.swift src tests
+.PHONY: help build run test lint format pkg dmg clean
 
 help: ## Show available targets.
 	@printf 'Usage: make <target>\n\nTargets:\n'
@@ -25,6 +28,12 @@ build: ## Build the Swift package executable.
 
 test: ## Run the Swift package tests.
 	$(SWIFT) test
+
+lint: ## Lint and automatically fix Swift sources.
+	$(SWIFTLINT) lint --fix $(SWIFT_PATHS)
+
+format: ## Format Swift sources in place.
+	$(SWIFTFORMAT) $(SWIFT_PATHS)
 
 run: ## Run the menu bar app.
 	$(SWIFT) run $(PRODUCT)
