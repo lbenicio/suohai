@@ -14,21 +14,25 @@ DMG_STAGING := .build/dmg-staging
 
 # Targets
 .DEFAULT_GOAL := pkg
-.PHONY: build run test pkg dmg clean
+.PHONY: help build run test pkg dmg clean
 
-build:
+help: ## Show available targets.
+	@printf 'Usage: make <target>\n\nTargets:\n'
+	@awk 'BEGIN { FS = ":.*##" } /^[a-zA-Z0-9_-]+:.*##/ { printf "  %-10s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+
+build: ## Build the Swift package executable.
 	$(SWIFT) build --product $(PRODUCT)
 
-test:
+test: ## Run the Swift package tests.
 	$(SWIFT) test
 
-run:
+run: ## Run the menu bar app.
 	$(SWIFT) run $(PRODUCT)
 
-pkg:
+pkg: ## Create the macOS app bundle.
 	$(SHELL) ./scripts/package.sh
 
-dmg: pkg
+dmg: pkg ## Create the app disk image.
 	rm -rf "$(DMG_STAGING)"
 	mkdir -p "$(DMG_STAGING)/licenses"
 	ditto "$(APP_BUNDLE)" "$(DMG_STAGING)/$(PRODUCT).app"
@@ -37,6 +41,6 @@ dmg: pkg
 	diskutil image create from --format UDZO --volumeName "$(PRODUCT)" "$(DMG_STAGING)" "$(DMG_IMAGE)"
 	rm -rf "$(DMG_STAGING)"
 
-clean:
+clean: ## Remove SwiftPM and generated app/disk-image artifacts.
 	$(SWIFT) package clean
 	rm -rf "$(APP_BUNDLE)" "$(DMG_IMAGE)" "$(DMG_STAGING)"
