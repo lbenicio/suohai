@@ -1,11 +1,3 @@
-//
-//  NSMenuItem+Extension.swift
-//  Suohai
-//
-
-//  SPDX-License-Identifier: GPL-3.0-only
-//
-
 import Cocoa
 
 extension NSMenuItem {
