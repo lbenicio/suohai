@@ -6,14 +6,12 @@
 
 Suohai is a macOS menu bar utility for keeping your chosen system audio input and output devices selected. Choose a microphone and speaker or headset from the menu bar; Suohai reapplies those choices when macOS changes the default device and restores them when the app starts.
 
-![Suohai menu bar app screenshot](assets/images/0x01.png)
-
 ## Features
 
 - Choose input and output devices independently from the menu bar.
 - Keep selected devices as the system-wide defaults.
 - Restore saved selections when Suohai launches.
-- Automatically clear a selection if its device is no longer available.
+- Clear a saved selection when its device disappears or can no longer be selected.
 - Store selected device IDs locally using `UserDefaults`.
 
 Suohai does not capture or transmit audio. It changes macOS audio-device defaults; it does not route audio for individual apps.
@@ -47,7 +45,7 @@ The disk image is created at `.build/Suohai.dmg`. To build only the app bundle, 
 2. Open the menu and select an available input device, output device, or both.
 3. Select an active device again to clear that selection and release its default-device lock.
 
-Selections are independent and persist locally. Suohai does not choose a device for you when no selection is saved. If a selected device is disconnected or unavailable, Suohai clears that selection.
+Selections are independent and persist locally. Suohai does not choose a device for you when no selection is saved. If CoreAudio reports that a selected device is missing or cannot make it the system default, Suohai clears that selection. If CoreAudio cannot provide the device list, Suohai keeps the saved selection until it can check again.
 
 ## Development
 

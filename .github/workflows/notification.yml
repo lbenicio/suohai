@@ -7,9 +7,8 @@ concurrency:
 on:
   workflow_run:
     workflows:
-      - Dependabot Updates
       - Build DMG and release
-      - Unit tests 
+      - Unit tests
     branches:
       - main
     types:
@@ -18,30 +17,86 @@ on:
 jobs:
   notification:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    permissions: {}
     steps:
       - name: Send Telegram message
         id: telegram
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.CHATID }}
-          token: ${{ secrets.BOTTOKEN }}
-          format: markdown
-          message: |
-            Code Deployed: ${{ github.repository }}
+        env:
+          TELEGRAM_CHAT_ID: ${{ secrets.CHATID }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.BOTTOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          SERVER_URL: ${{ github.server_url }}
+          UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id || '' }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name || 'Manual dispatch' }}
+          WORKFLOW_CONCLUSION: ${{ github.event.workflow_run.conclusion || 'Not applicable' }}
+          COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message || 'Manual dispatch; no upstream commit message.' }}
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          python3 - <<'PY'
+          import html
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
 
-            ${{ github.actor }} created commit:
-            ${{ github.event.workflow_run.head_commit.message }}
+          def text(value, limit):
+              value = value[:limit]
+              return html.escape(value, quote=False)
 
-            [View action run](${{ github.event.workflow_run.html_url }})
-            [Cancel action run](${{ github.event.workflow_run.cancel_url }})
+          chat_id = os.environ["TELEGRAM_CHAT_ID"]
+          token = os.environ["TELEGRAM_BOT_TOKEN"]
+          server_url = os.environ["SERVER_URL"].rstrip("/")
+          repository = os.environ["REPOSITORY"]
+          run_id = os.environ["UPSTREAM_RUN_ID"] or os.environ["CURRENT_RUN_ID"]
+          run_url = f"{server_url}/{repository}/actions/runs/{run_id}"
+          commit_url = f"{server_url}/{repository}/commit/{os.environ['COMMIT_SHA']}"
+          conclusion = os.environ["WORKFLOW_CONCLUSION"]
+          status_icon = "✅" if conclusion == "success" else "ℹ️" if conclusion == "Not applicable" else "🚫"
+          commit_message = os.environ["COMMIT_MESSAGE"]
+          if len(commit_message) > 1600:
+              commit_message = commit_message[:1599] + "…"
 
-            Workflow: ${{ github.event.workflow_run.name }}
-            Job status: ${{ github.event.workflow_run.conclusion == 'success' && '✅' || '🚫' }} ${{ github.event.workflow_run.conclusion }}
+          message = "\n".join((
+              f"Workflow completed: <code>{text(repository, 256)}</code>",
+              f"Triggered by <code>{text(os.environ['ACTOR'], 100)}</code>.",
+              "",
+              "Commit:",
+              f"<pre>{text(commit_message, 1600)}</pre>",
+              f'<a href="{html.escape(run_url, quote=True)}">View workflow run</a>',
+              f"Workflow: <code>{text(os.environ['WORKFLOW_NAME'], 200)}</code>",
+              f"Job status: {status_icon} <code>{text(conclusion, 64)}</code>",
+              f'<a href="{html.escape(commit_url, quote=True)}">View commit</a>',
+          ))
 
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+          request = urllib.request.Request(
+              f"https://api.telegram.org/bot{token}/sendMessage",
+              data=json.dumps({
+                  "chat_id": chat_id,
+                  "text": message,
+                  "parse_mode": "HTML",
+                  "disable_web_page_preview": True,
+              }).encode("utf-8"),
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+
+          try:
+              with urllib.request.urlopen(request, timeout=20) as response:
+                  result = json.load(response)
+          except urllib.error.HTTPError as error:
+              print(f"Telegram notification failed (HTTP {error.code}).", file=sys.stderr)
+              sys.exit(1)
+          except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError):
+              print("Telegram notification failed.", file=sys.stderr)
+              sys.exit(1)
+
+          if not result.get("ok"):
+              print("Telegram rejected the notification.", file=sys.stderr)
+              sys.exit(1)
+          PY
 
       - name: Add workflow summary
         if: ${{ always() }}
@@ -55,16 +110,33 @@ jobs:
           UPSTREAM_CONCLUSION: ${{ github.event.workflow_run.conclusion || 'Not applicable' }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          {
-            echo '## 📣 Telegram notification'
-            echo
-            echo '| Detail | Value |'
-            echo '| --- | --- |'
-            printf '| Job result | %s |\n' "$JOB_STATUS"
-            printf '| Notification step | %s |\n' "${NOTIFICATION_STATUS:-not run}"
-            printf '| Trigger | %s by %s |\n' "$EVENT_NAME" "$ACTOR"
-            printf '| Ref | %s |\n' "$REF_NAME"
-            printf '| Upstream workflow | %s |\n' "$UPSTREAM_WORKFLOW"
-            printf '| Upstream result | %s |\n' "$UPSTREAM_CONCLUSION"
-            printf '| Workflow run | [View run](%s) |\n' "$RUN_URL"
-          } >> "$GITHUB_STEP_SUMMARY"
+          python3 - <<'PY'
+          import html
+          import os
+
+          def table_value(value):
+              one_line = value.replace("\r", " ").replace("\n", " ")
+              escaped = html.escape(one_line, quote=False).replace("|", "&#124;")
+              return f"<code>{escaped}</code>"
+
+          rows = (
+              ("Job result", os.environ["JOB_STATUS"]),
+              ("Notification step", os.environ["NOTIFICATION_STATUS"] or "not run"),
+              ("Trigger", f"{os.environ['EVENT_NAME']} by {os.environ['ACTOR']}"),
+              ("Ref", os.environ["REF_NAME"]),
+              ("Upstream workflow", os.environ["UPSTREAM_WORKFLOW"]),
+              ("Upstream result", os.environ["UPSTREAM_CONCLUSION"]),
+          )
+          lines = [
+              "## 📣 Telegram notification",
+              "",
+              "| Detail | Value |",
+              "| --- | --- |",
+          ]
+          lines.extend(f"| {label} | {table_value(value)} |" for label, value in rows)
+          run_url = html.escape(os.environ["RUN_URL"], quote=True)
+          lines.append(f'| Workflow run | <a href="{run_url}">View run</a> |')
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("\n".join(lines) + "\n")
+          PY
