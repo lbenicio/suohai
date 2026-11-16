@@ -21,6 +21,7 @@ fi
 rm -rf "$APP_BUNDLE"
 mkdir -p "$APP_CONTENTS/MacOS" "$APP_RESOURCES/Suohai_Suohai.bundle" "$APP_RESOURCES/licenses"
 cp "$BIN_DIR/Suohai" "$APP_CONTENTS/MacOS/Suohai"
+codesign --remove-signature "$APP_CONTENTS/MacOS/Suohai"
 cp "$ROOT_DIR/assets/plist/Info.plist" "$APP_CONTENTS/Info.plist"
 cp "$ROOT_DIR/assets/icons/icon.icns" "$APP_RESOURCES/icon.icns"
 cp "$ROOT_DIR/LICENSE.txt" "$APP_RESOURCES/LICENSE.txt"
