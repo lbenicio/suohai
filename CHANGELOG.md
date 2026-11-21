@@ -8,6 +8,7 @@ The format is based on "Keep a Changelog" and this project adheres to [Semantic 
 
 ### Added
 - Private vulnerability reporting and CI build/test checks.
+- CI unit tests with Codecov coverage uploads on pushes and pull requests to `main`.
 - Domain, application, and persistence-adapter tests for audio-device selection behavior.
 
 ### Changed

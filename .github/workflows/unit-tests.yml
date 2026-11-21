@@ -1,6 +1,12 @@
 name: Unit tests
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -13,10 +19,32 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         id: tests
-        run: swift test
+        run: swift test --enable-code-coverage
+
+      - name: Export LCOV coverage report
+        run: |
+          BIN_PATH=$(swift build --show-bin-path)
+          mkdir -p coverage
+          xcrun llvm-cov export \
+            --format=lcov \
+            --ignore-filename-regex='(/\.build/|/tests/)' \
+            --instr-profile="$BIN_PATH/codecov/default.profdata" \
+            "$BIN_PATH/SuohaiDomainTests.xctest/Contents/MacOS/SuohaiDomainTests" \
+            --object "$BIN_PATH/SuohaiApplicationTests.xctest/Contents/MacOS/SuohaiApplicationTests" \
+            --object "$BIN_PATH/SuohaiAdaptersTests.xctest/Contents/MacOS/SuohaiAdaptersTests" \
+            > coverage/lcov.info
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          files: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
 
       - name: Add workflow summary
         if: ${{ always() }}

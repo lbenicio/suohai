@@ -65,7 +65,7 @@ Useful Make targets:
 | `make clean` | Remove SwiftPM output and generated app/disk-image artifacts. |
 | `make help` | List available targets. |
 
-The unit-test and **Build DMG and release** GitHub Actions workflows are manually triggered from the repository’s **Actions** tab. The release workflow uses the first versioned section in `CHANGELOG.md` (excluding `[Unreleased]`) for the release version and notes, and aborts if that version has already been released.
+The unit-test workflow runs on pushes and pull requests targeting `main`, and can also be run manually. It uploads LCOV coverage to Codecov. Configure `CODECOV_TOKEN` as a GitHub Actions secret, and as a Dependabot secret for Dependabot pull-request uploads. Fork pull requests do not receive repository secrets, so enable Codecov tokenless uploads if they should publish coverage. Coverage upload errors do not fail the unit-test workflow. The **Build DMG and release** workflow is manually triggered from the repository’s **Actions** tab. It uses the first versioned section in `CHANGELOG.md` (excluding `[Unreleased]`) for the release version and notes, and aborts if that version has already been released.
 
 For contribution guidance, see [CONTRIBUTING.md](CONTRIBUTING.md). Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
